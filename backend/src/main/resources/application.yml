@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: fitcoach-backend
+  datasource:
+    url: ${DATABASE_URL:jdbc:mysql://localhost:3306/fitcoach?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${DATABASE_USERNAME:root}
+    password: ${DATABASE_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: ${SERVER_PORT:8080}
+
+jwt:
+  secret: ${JWT_SECRET:change-me-very-secret-key}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+ai:
+  provider: ${AI_PROVIDER:ollama}
+  api-key: ${AI_API_KEY:}
+  endpoint: ${AI_ENDPOINT:http://localhost:11434/v1/chat/completions}
+  model: ${AI_MODEL:llama3.2:1b}
+
+strava:
+  client-id: ${STRAVA_CLIENT_ID:}
+  client-secret: ${STRAVA_CLIENT_SECRET:}
+  redirect-uri: ${STRAVA_REDIRECT_URI:http://localhost:8080/api/strava/callback}
+  auth-url: https://www.strava.com/oauth/authorize
+  token-url: https://www.strava.com/oauth/token
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html

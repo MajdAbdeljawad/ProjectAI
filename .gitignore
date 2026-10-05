@@ -1,0 +1,19 @@
+# Java
+backend/target/
+backend/.idea/
+backend/.classpath
+backend/.project
+backend/.settings/
+
+# Node/Angular
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# Env
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db

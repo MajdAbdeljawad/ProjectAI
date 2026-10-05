@@ -1,0 +1,99 @@
+<section class="dashboard-shell">
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Good morning, {{ userName }} 👋</p>
+      <h1>{{ goal }}</h1>
+    </div>
+    <button class="primary-btn" type="button" (click)="generatePlan()" [disabled]="isGenerating">
+      {{ isGenerating ? 'Generating...' : 'Generate AI plan' }}
+    </button>
+  </header>
+  <p class="action-message" *ngIf="actionMessage" role="status">{{ actionMessage }}</p>
+
+  <div class="summary-grid">
+    <article class="card highlight">
+      <span class="kicker">Weight</span>
+      <h2>{{ currentWeight }} kg → {{ targetWeight }} kg</h2>
+      <div class="progress-track">
+        <span [style.width.%]="planProgress"></span>
+      </div>
+      <small>Progress to target: {{ planProgress }}%</small>
+    </article>
+
+    <article class="card">
+      <span class="kicker">BMI</span>
+      <h2>{{ bmi }}</h2>
+      <p>Estimated body mass index</p>
+    </article>
+
+    <article class="card">
+      <span class="kicker">Today’s workout</span>
+      <h2>{{ todayWorkout }}</h2>
+      <p>45-minute strength session</p>
+    </article>
+  </div>
+
+  <div class="content-grid">
+    <section class="panel">
+      <div class="panel-header">
+        <h3>Weekly progress</h3>
+        <span>4 week trend</span>
+      </div>
+      <div class="bar-chart" aria-label="Weekly progress chart">
+        <span style="height: 30%"></span>
+        <span style="height: 45%"></span>
+        <span style="height: 60%"></span>
+        <span style="height: 75%"></span>
+        <span style="height: 92%"></span>
+        <span style="height: 82%"></span>
+        <span style="height: 100%"></span>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <div class="panel-header">
+        <h3>AI coach</h3>
+      </div>
+      <blockquote>{{ aiMessage }}</blockquote>
+      <div class="metric-list">
+        <div *ngFor="let metric of metrics">
+          <span>{{ metric.label }}</span>
+          <strong>{{ metric.value }}</strong>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="lower-grid">
+    <section class="panel">
+      <div class="panel-header">
+        <h3>Training week</h3>
+      </div>
+      <div class="workout-list">
+        <div class="workout-item" *ngFor="let workout of workouts">
+          <span class="day-tag">{{ workout.day }}</span>
+          <div>
+            <strong>{{ workout.title }}</strong>
+            <small>{{ workout.detail }}</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h3>Strava</h3>
+        <span>{{ activitiesThisWeek }} activities this week</span>
+      </div>
+      <div class="strava-actions">
+        <button type="button" class="secondary-btn" (click)="connectStrava()">Connect Strava</button>
+        <button type="button" class="secondary-btn" (click)="syncStrava()">Sync activities</button>
+      </div>
+      <ul class="strava-list">
+        <li><span>Run</span><strong>5.2 km</strong></li>
+        <li><span>Ride</span><strong>18.4 km</strong></li>
+        <li><span>Lift</span><strong>56 min</strong></li>
+      </ul>
+    </section>
+  </div>
+</section>

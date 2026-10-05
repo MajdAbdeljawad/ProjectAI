@@ -1,0 +1,48 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: fitcoach-mysql
+    environment:
+      MYSQL_DATABASE: fitcoach
+      MYSQL_USER: fitcoach
+      MYSQL_PASSWORD: fitcoach
+      MYSQL_ROOT_PASSWORD: change-me-root
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  backend:
+    build:
+      context: ./backend
+    container_name: fitcoach-backend
+    depends_on:
+      - mysql
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      DATABASE_URL: jdbc:mysql://mysql:3306/fitcoach?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      DATABASE_USERNAME: fitcoach
+      DATABASE_PASSWORD: fitcoach
+      JWT_SECRET: change-me-in-production
+      AI_PROVIDER: ${AI_PROVIDER:-ollama}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_ENDPOINT: ${AI_ENDPOINT:-http://host.docker.internal:11434/v1/chat/completions}
+      AI_MODEL: ${AI_MODEL:-llama3.2:1b}
+      STRAVA_CLIENT_ID: ${STRAVA_CLIENT_ID:-}
+      STRAVA_CLIENT_SECRET: ${STRAVA_CLIENT_SECRET:-}
+      STRAVA_REDIRECT_URI: http://localhost:8080/api/strava/callback
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: fitcoach-frontend
+    depends_on:
+      - backend
+    ports:
+      - "4200:4200"
+
+volumes:
+  mysql_data:

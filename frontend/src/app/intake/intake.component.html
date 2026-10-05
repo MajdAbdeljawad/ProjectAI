@@ -1,0 +1,66 @@
+<main class="intake-page">
+  <section class="intro">
+    <p class="eyebrow">AI workout coach</p>
+    <h1>Answer a few questions. Get a plan built for you.</h1>
+    <p class="intro-copy">No account required. Your answers help the coach adapt training, recovery, exercise choice, and recommendations to your real routine.</p>
+  </section>
+
+  <form class="intake-form" [formGroup]="form" (ngSubmit)="generate()">
+    <div class="form-section">
+      <h2>About you</h2>
+      <div class="field-grid">
+        <label>Name<input formControlName="firstName" placeholder="First name" /></label>
+        <label>Age<input type="number" formControlName="age" /></label>
+        <label>Gender<select formControlName="gender"><option>female</option><option>male</option><option>non-binary</option><option>prefer not to say</option></select></label>
+        <label>Height (cm)<input type="number" formControlName="heightCm" /></label>
+        <label>Weight (kg)<input type="number" formControlName="weightKg" /></label>
+        <label>Target weight (kg)<input type="number" formControlName="targetWeightKg" /></label>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>Your training reality</h2>
+      <div class="field-grid">
+        <label>Fitness level<select formControlName="fitnessLevel"><option>beginner</option><option>intermediate</option><option>advanced</option></select></label>
+        <label>Experience<select formControlName="trainingExperience"><option>new to structured training</option><option>some experience</option><option>consistent for 1+ years</option></select></label>
+        <label>Days per week<input type="number" formControlName="trainingDaysPerWeek" /></label>
+        <label>Minutes per session<input type="number" formControlName="sessionDurationMinutes" /></label>
+        <label>Location<select formControlName="trainingLocation"><option>home</option><option>gym</option><option>outdoors</option></select></label>
+        <label>Equipment<input formControlName="equipment" placeholder="Dumbbells, bands, none..." /></label>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>What should the plan optimize?</h2>
+      <div class="field-grid single-row">
+        <label>Main goal<select formControlName="mainGoal"><option>muscle gain</option><option>fat loss</option><option>strength improvement</option><option>endurance improvement</option><option>weight maintenance</option></select></label>
+        <label>Injuries or limitations<textarea formControlName="injuriesOrLimitations" placeholder="Tell the coach what to avoid, or write None"></textarea></label>
+      </div>
+    </div>
+
+    <p class="error" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
+    <button class="generate-button" type="submit" [disabled]="isGenerating">
+      {{ isGenerating ? 'Building your plan...' : 'Generate my personalized plan' }}
+    </button>
+  </form>
+
+  <section class="result" *ngIf="plan">
+    <div class="result-heading">
+      <div><p class="eyebrow">Your recommendation</p><h2>{{ plan.title }}</h2></div>
+      <span>30 days</span>
+    </div>
+    <p class="summary">{{ plan.summary }}</p>
+    <div class="strategy"><strong>How to progress</strong><span>{{ plan.weeklyStrategy }}</span></div>
+    <div class="week-grid">
+      <article class="week" *ngFor="let week of plan.weeks">
+        <p class="eyebrow">Week {{ week.weekNumber }}</p>
+        <h3>{{ week.focus }}</h3>
+        <div class="day" *ngFor="let day of week.days">
+          <strong>Day {{ day.dayNumber }} · {{ day.type }}</strong>
+          <span>{{ day.notes }}</span>
+          <small *ngFor="let exercise of day.exercises">{{ exercise.name }} · {{ exercise.sets }} × {{ exercise.reps }}</small>
+        </div>
+      </article>
+    </div>
+  </section>
+</main>
