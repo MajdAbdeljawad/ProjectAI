@@ -1,0 +1,126 @@
+<div class="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 selection:bg-emerald-500 selection:text-white">
+  
+  <!-- BARRE DE NAVIGATION SUPÉRIEURE -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Logo & Titre de l'application -->
+        <div class="flex items-center gap-3">
+          <a routerLink="/dashboard" class="flex items-center gap-3 group">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 text-white flex items-center justify-center font-black text-xl shadow-md group-hover:scale-105 transition-all">
+              ⚡
+            </div>
+            <div>
+              <div class="text-xs uppercase font-extrabold tracking-wider text-emerald-600">
+                Site Web d'Entraînement
+              </div>
+              <div class="text-base font-black tracking-tight text-slate-900 flex items-center gap-1.5">
+                Nutrition IA
+                <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                  PRO
+                </span>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <!-- Liens de navigation centraux -->
+        <nav class="hidden md:flex items-center gap-1 bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/60">
+          <a 
+            routerLink="/dashboard" 
+            routerLinkActive="bg-white text-emerald-700 shadow-sm font-bold" 
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5">
+            <span>📊</span> Tableau de bord
+          </a>
+
+          <a 
+            routerLink="/profile" 
+            routerLinkActive="bg-white text-emerald-700 shadow-sm font-bold" 
+            class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5">
+            <span>👤</span> Mon Profil
+          </a>
+
+          <a 
+            routerLink="/meal-plan" 
+            routerLinkActive="bg-white text-emerald-700 shadow-sm font-bold" 
+            class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5">
+            <span>🥗</span> Programme 7 Jours
+          </a>
+
+          <a 
+            routerLink="/history" 
+            routerLinkActive="bg-white text-emerald-700 shadow-sm font-bold" 
+            class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5">
+            <span>📜</span> Historique
+          </a>
+        </nav>
+
+        <!-- Badge Profil Actuel & Cible Calorique -->
+        <div class="flex items-center gap-3">
+          @if (profile(); as p) {
+            <a 
+              routerLink="/profile"
+              class="hidden sm:flex items-center gap-3 px-3 py-1.5 rounded-2xl bg-slate-50 border border-slate-200/80 hover:bg-slate-100 transition">
+              <div class="w-8 h-8 rounded-xl bg-emerald-600 text-white font-bold flex items-center justify-center text-xs">
+                {{ p.fullName.charAt(0) }}
+              </div>
+              <div class="text-left text-xs">
+                <div class="font-bold text-slate-800 leading-tight truncate max-w-[120px]">{{ p.fullName }}</div>
+                <div class="text-[10px] text-emerald-700 font-semibold">{{ p.targetCalories }} kcal/j • {{ getGoalLabel(p.goal) }}</div>
+              </div>
+            </a>
+          }
+
+          <a 
+            routerLink="/meal-plan" 
+            [queryParams]="{ generate: 'true' }"
+            class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition transform active:scale-95 flex items-center gap-1.5">
+            <span>✨</span> Générer IA
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Navigation mobile (barre inférieure sur smartphone) -->
+      <div class="flex md:hidden items-center justify-around py-2 border-t border-slate-100 text-xs">
+        <a routerLink="/dashboard" routerLinkActive="text-emerald-600 font-bold" class="flex flex-col items-center py-1">
+          <span>📊</span>
+          <span class="text-[10px]">Dashboard</span>
+        </a>
+        <a routerLink="/profile" routerLinkActive="text-emerald-600 font-bold" class="flex flex-col items-center py-1">
+          <span>👤</span>
+          <span class="text-[10px]">Profil</span>
+        </a>
+        <a routerLink="/meal-plan" routerLinkActive="text-emerald-600 font-bold" class="flex flex-col items-center py-1">
+          <span>🥗</span>
+          <span class="text-[10px]">Programme</span>
+        </a>
+        <a routerLink="/history" routerLinkActive="text-emerald-600 font-bold" class="flex flex-col items-center py-1">
+          <span>📜</span>
+          <span class="text-[10px]">Historique</span>
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- CONTENU PRINCIPAL (ROUTER OUTLET) -->
+  <main class="flex-1">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- PIED DE PAGE -->
+  <footer class="mt-auto bg-white border-t border-slate-200 py-8 px-4 text-center text-xs text-slate-500">
+    <div class="max-w-6xl mx-auto space-y-2">
+      <div class="font-semibold text-slate-700">
+        Plateforme d'Entraînement & Nutrition Intelligente • Module Nutrition IA
+      </div>
+      <p class="max-w-2xl mx-auto text-[11px] text-slate-400">
+        Les calculs d'apport calorique et de macronutriments sont des estimations basées sur la formule de Mifflin-St Jeor et les recommandations de nutrition sportive. Ces données ne constituent pas un avis médical.
+      </p>
+    </div>
+  </footer>
+
+</div>
