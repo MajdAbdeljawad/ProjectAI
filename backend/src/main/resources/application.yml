@@ -22,7 +22,7 @@ server:
   port: ${SERVER_PORT:8080}
 
 jwt:
-  secret: ${JWT_SECRET:change-me-very-secret-key}
+  secret: ${JWT_SECRET:change-me-very-secret-key-please-replace}
   expiration-ms: ${JWT_EXPIRATION_MS:86400000}
 
 ai:
@@ -30,6 +30,8 @@ ai:
   api-key: ${AI_API_KEY:}
   endpoint: ${AI_ENDPOINT:http://localhost:11434/v1/chat/completions}
   model: ${AI_MODEL:llama3.2:1b}
+  connect-timeout-ms: ${AI_CONNECT_TIMEOUT_MS:5000}
+  read-timeout-ms: ${AI_READ_TIMEOUT_MS:45000}
 
 strava:
   client-id: ${STRAVA_CLIENT_ID:}

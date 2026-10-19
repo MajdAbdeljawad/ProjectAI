@@ -39,6 +39,32 @@ export class IntakeComponent {
     });
   }
 
+  isInvalid(controlName: string): boolean {
+    const control = this.form.get(controlName);
+    return !!control && control.invalid && control.touched;
+  }
+
+  resetForm(): void {
+    this.form.reset({
+      firstName: '',
+      age: 30,
+      gender: 'prefer not to say',
+      heightCm: 175,
+      weightKg: 70,
+      fitnessLevel: 'beginner',
+      trainingExperience: 'new to structured training',
+      trainingDaysPerWeek: 3,
+      sessionDurationMinutes: 45,
+      trainingLocation: 'home',
+      equipment: 'bodyweight only',
+      mainGoal: 'muscle gain',
+      targetWeightKg: 70,
+      injuriesOrLimitations: ''
+    });
+    this.errorMessage = '';
+    this.plan = null;
+  }
+
   generate(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();

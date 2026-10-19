@@ -1,0 +1,162 @@
+<section class="recovery-shell">
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Recovery management</p>
+      <h1>Personalized next-session guidance</h1>
+    </div>
+    <button class="primary-btn" type="button" (click)="generate()" [disabled]="generating || viewState === 'auth-required'">
+      {{ generating ? 'Analyzing recovery...' : 'Generate assessment' }}
+    </button>
+  </header>
+
+  <p class="banner success" *ngIf="successMessage">{{ successMessage }}</p>
+  <p class="banner error" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
+  <p class="banner notice" *ngIf="overview?.safetyNotice">{{ overview?.safetyNotice }}</p>
+
+  <section class="card auth-card" *ngIf="viewState === 'auth-required'">
+    <h2>Sign in required</h2>
+    <p>Recovery assessments use your owned profile, training, and check-in data. API keys stay on the server.</p>
+    <form class="auth-grid" [formGroup]="authForm">
+      <label>Email<input type="email" formControlName="email" /></label>
+      <label>Password<input type="password" formControlName="password" /></label>
+      <label>First name<input formControlName="firstName" /></label>
+      <label>Last name<input formControlName="lastName" /></label>
+    </form>
+    <div class="actions">
+      <button class="primary-btn" type="button" (click)="login()" [disabled]="authenticating">Sign in</button>
+      <button class="secondary-btn" type="button" (click)="register()" [disabled]="authenticating">Create account</button>
+    </div>
+  </section>
+
+  <section class="card" *ngIf="viewState === 'loading'">
+    <p class="kicker">Loading</p>
+    <h2>Collecting available recovery indicators...</h2>
+    <p>Missing sleep, heart-rate, and Strava values are left blank rather than estimated.</p>
+  </section>
+
+  <div class="layout" *ngIf="viewState !== 'auth-required'">
+    <form class="card" [formGroup]="checkinForm">
+      <div class="panel-header">
+        <h2>Today's check-in</h2>
+        <span>Leave fields blank if you do not have the data</span>
+      </div>
+      <div class="field-grid">
+        <label>Sleep hours<input type="number" step="0.1" formControlName="sleepHours" placeholder="e.g. 7.5" /></label>
+        <label>Sleep quality (1-5)<input type="number" formControlName="sleepQuality" /></label>
+        <label>Fatigue (1-10)<input type="number" formControlName="fatigueLevel" /></label>
+        <label>Soreness (1-10)<input type="number" formControlName="sorenessLevel" /></label>
+        <label>Soreness areas<input formControlName="sorenessAreas" placeholder="Quads, shoulders..." /></label>
+        <label>Resting heart rate<input type="number" formControlName="restingHeartRate" placeholder="Only if you measured it" /></label>
+      </div>
+      <label>Symptoms<textarea formControlName="symptoms" placeholder="Optional. Report pain or warning signs. This is not a diagnosis form."></textarea></label>
+      <label>Limitations<textarea formControlName="limitations"></textarea></label>
+      <label>Notes<textarea formControlName="notes"></textarea></label>
+    </form>
+
+    <section class="card">
+      <div class="panel-header">
+        <h2>Available indicators</h2>
+        <span>{{ overview?.minimumSignalPresent ? 'Enough signal to assess' : 'Insufficient data' }}</span>
+      </div>
+      <div class="metric-list" *ngIf="overview; else noOverview">
+        <div>
+          <span>Goal</span>
+          <strong>{{ displayValue(overview.indicators.profile?.mainGoal) }}</strong>
+        </div>
+        <div>
+          <span>Sleep</span>
+          <strong>{{ overview.indicators.sleep?.available ? displayValue(overview.indicators.sleep?.latestHours) + ' h' : 'Not available' }}</strong>
+        </div>
+        <div>
+          <span>Fatigue / soreness</span>
+          <strong>{{ overview.indicators.subjective?.available ? displayValue(overview.indicators.subjective?.fatigueLevel) + ' / ' + displayValue(overview.indicators.subjective?.sorenessLevel) : 'Not available' }}</strong>
+        </div>
+        <div>
+          <span>Resting HR vs baseline</span>
+          <strong>
+            {{ overview.indicators.heartRate?.available ? displayValue(overview.indicators.heartRate?.latestRestingHeartRate) : 'Not available' }}
+            <small *ngIf="overview.indicators.heartRate?.baselineAvailable"> / {{ overview.indicators.heartRate?.personalBaseline }}</small>
+          </strong>
+        </div>
+        <div>
+          <span>Recent training</span>
+          <strong>{{ overview.indicators.training?.available ? displayValue(overview.indicators.training?.intensityLabel) : 'Not available' }}</strong>
+        </div>
+        <div>
+          <span>Upcoming session</span>
+          <strong>{{ overview.indicators.upcomingSession?.available ? displayValue(overview.indicators.upcomingSession?.type) : 'Not available' }}</strong>
+        </div>
+      </div>
+      <ng-template #noOverview>
+        <p>Indicators will appear after the backend responds.</p>
+      </ng-template>
+    </section>
+  </div>
+
+  <section class="card empty" *ngIf="viewState === 'empty'">
+    <h2>No assessment yet</h2>
+    <p>Log any available check-in values and generate an assessment. The coach will not fabricate sleep, heart rate, or Strava activity.</p>
+  </section>
+
+  <section class="card validation" *ngIf="viewState === 'validation-error'">
+    <h2>Check-in could not be validated</h2>
+    <p>Units, dates, or ranges need correction. Reported values were not replaced with estimates.</p>
+  </section>
+
+  <section class="card provider" *ngIf="viewState === 'provider-error'">
+    <h2>Recovery model unavailable</h2>
+    <p>{{ assessment?.providerError || 'The provider timed out or returned an invalid response. No training plan was changed.' }}</p>
+    <button class="secondary-btn" type="button" (click)="generate()" [disabled]="generating">Retry assessment</button>
+  </section>
+
+  <div class="layout" *ngIf="assessment && viewState !== 'auth-required'">
+    <article class="card highlight">
+      <span class="kicker">AI recovery assessment</span>
+      <h2>{{ classificationLabel(assessment.classification) }}</h2>
+      <p>Confidence: {{ displayValue(assessment.confidence) }} · Status: {{ assessment.status }}</p>
+      <p class="evidence" *ngFor="let item of assessment.supportingEvidence">{{ item }}</p>
+    </article>
+    <article class="card">
+      <span class="kicker">Recommended next action</span>
+      <h2>{{ actionLabel(assessment.recommendedAction) }}</h2>
+      <p>{{ assessment.nextSessionGuidance }}</p>
+      <p class="plan-note">Training plan changed: {{ assessment.planChangeAuthorized ? 'yes' : 'no' }}</p>
+    </article>
+  </div>
+
+  <section class="card" *ngIf="assessment && viewState !== 'auth-required'">
+    <h2>Explanation and suggestions</h2>
+    <p>{{ assessment.explanation }}</p>
+    <ul>
+      <li *ngFor="let suggestion of assessment.recoverySuggestions">{{ suggestion }}</li>
+    </ul>
+    <p class="safety">{{ assessment.safetyGuidance }}</p>
+  </section>
+
+  <section class="card warnings" *ngIf="overview && (overview.missingFields.length || overview.contradictions.length || overview.safetyFlags.length)">
+    <h2>Missing data, contradictions, and safety notices</h2>
+    <p *ngIf="assessment?.requiresProfessionalEvaluation" class="safety">
+      Concerning symptoms were escalated. Seek appropriate professional evaluation. This app does not diagnose injuries or illness.
+    </p>
+    <div class="chip-row">
+      <span class="chip" *ngFor="let field of overview.missingFields">Missing: {{ field }}</span>
+      <span class="chip warn" *ngFor="let note of overview.contradictions">{{ note }}</span>
+      <span class="chip danger" *ngFor="let flag of overview.safetyFlags">{{ flag }}</span>
+    </div>
+    <p *ngFor="let note of overview.dataQualityNotes">{{ note }}</p>
+  </section>
+
+  <section class="card" *ngIf="history.length">
+    <div class="panel-header">
+      <h2>Assessment history</h2>
+      <span>{{ history.length }} saved</span>
+    </div>
+    <div class="history-item" *ngFor="let item of history">
+      <div>
+        <strong>{{ classificationLabel(item.classification) }}</strong>
+        <small>{{ item.generatedAt | date:'medium' }} · {{ actionLabel(item.recommendedAction) }}</small>
+      </div>
+      <span>{{ item.status }}</span>
+    </div>
+  </section>
+</section>

@@ -17,14 +17,17 @@ public class ApiExceptionHandler {
     public ResponseEntity<Map<String, String>> handleApiException(ApiException ex) {
         Map<String, String> errors = new HashMap<>();
         errors.put("error", ex.getMessage());
-        return ResponseEntity.badRequest().body(errors);
+        errors.put("code", ex.getCode());
+        return ResponseEntity.status(ex.getStatus()).body(errors);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
+        errors.put("code", "VALIDATION_ERROR");
+        errors.put("error", "Please correct the highlighted fields.");
         ex.getBindingResult().getAllErrors().forEach(error -> {
-            String fieldName = ((FieldError) error).getField();
+            String fieldName = error instanceof FieldError fieldError ? fieldError.getField() : error.getObjectName();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
