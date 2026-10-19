@@ -1,0 +1,191 @@
+<main class="progress-page">
+  <section class="intro">
+    <p class="eyebrow">AI progress coach</p>
+    <h1>Track the scale. See the trend. Get coached.</h1>
+    <p class="intro-copy">Add your goal and at least two weigh-ins over 7 days, then click Analyze. FitCoach calculates the trend and the AI writes a short coaching note.</p>
+  </section>
+
+  <form class="panel" [formGroup]="goalForm">
+    <div class="form-section">
+      <div class="section-head">
+        <h2>1. Your goal</h2>
+        <button type="button" class="ghost-button" (click)="loadSampleAndAnalyze()">Try with sample data</button>
+      </div>
+      <div class="field-grid">
+        <label>Name<input formControlName="firstName" placeholder="First name" /></label>
+        <label>Height (cm)<input type="number" formControlName="heightCm" /></label>
+        <label>Main goal<select formControlName="mainGoal"><option>fat loss</option><option>muscle gain</option><option>weight maintenance</option><option>strength improvement</option></select></label>
+        <label>Target weight (kg)<input type="number" formControlName="targetWeightKg" /></label>
+        <label>Target date<input type="date" formControlName="targetDate" /></label>
+      </div>
+    </div>
+  </form>
+
+  <form class="panel" [formGroup]="measureForm" (ngSubmit)="addMeasurement()">
+    <div class="form-section">
+      <h2>2. Add a measurement</h2>
+      <div class="field-grid">
+        <label>Date<input type="date" formControlName="measuredOn" /></label>
+        <label>Weight (kg)<input type="number" step="0.1" formControlName="weightKg" /></label>
+        <label>Waist (cm)<input type="number" step="0.1" formControlName="waistCm" placeholder="optional" /></label>
+        <label>Body fat (%)<input type="number" step="0.1" formControlName="bodyFatPercent" placeholder="optional" /></label>
+        <label class="wide">Notes<input formControlName="notes" placeholder="optional" /></label>
+      </div>
+      <button class="secondary-button" type="submit">Add measurement</button>
+    </div>
+  </form>
+
+  <section class="panel" *ngIf="measurements.length">
+    <div class="form-section no-border">
+      <h2>Your measurements ({{ measurements.length }})</h2>
+      <p class="hint" *ngIf="measurements.length < 2 || spanDays < 7">
+        Need at least 2 weigh-ins over 7 days for a reliable trend.
+        Currently: {{ measurements.length }} measurement(s), {{ spanDays }} day(s).
+      </p>
+      <div class="table">
+        <div class="table-head"><span>Date</span><span>Weight</span><span>Waist</span><span>Body fat</span><span></span></div>
+        <div class="table-row" *ngFor="let m of sortedMeasurements">
+          <span>{{ m.measuredOn }}</span>
+          <span>{{ m.weightKg }} kg</span>
+          <span>{{ m.waistCm ? m.waistCm + ' cm' : '—' }}</span>
+          <span>{{ m.bodyFatPercent ? m.bodyFatPercent + '%' : '—' }}</span>
+          <button type="button" class="link-button" (click)="removeMeasurement(m.measuredOn)">Remove</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="action-bar">
+    <p class="error" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
+    <button class="generate-button" type="button" (click)="analyze()" [disabled]="isAnalyzing">
+      {{ isAnalyzing ? 'Analyzing your progress...' : '3. Analyze my progress' }}
+    </button>
+  </div>
+
+  <section class="result" id="progress-result" *ngIf="analysis">
+    <div class="result-heading">
+      <div>
+        <p class="eyebrow">Result</p>
+        <h2>{{ analysis.title }}</h2>
+      </div>
+      <span class="status-pill" [ngClass]="statusClass">{{ statusLabel }}</span>
+    </div>
+
+    <div class="status-banner" [ngClass]="statusClass">
+      <strong>{{ statusTitle }}</strong>
+      <p>{{ analysis.message }}</p>
+      <button *ngIf="analysis.status === 'INSUFFICIENT_DATA'" type="button" class="ghost-button" (click)="loadSampleAndAnalyze()">
+        Fill 4 weeks of sample data and analyze
+      </button>
+    </div>
+
+    <div class="targets">
+      <article class="target main">
+        <small>Current weight</small>
+        <strong>{{ analysis.stats.currentWeightKg }}</strong>
+        <span>kg · BMI {{ analysis.stats.currentBmi }}</span>
+      </article>
+      <article class="target">
+        <small>Change</small>
+        <strong>{{ formatSigned(analysis.stats.changeKg) }}</strong>
+        <span>{{ analysis.stats.daysTracked }} days tracked</span>
+      </article>
+      <article class="target">
+        <small>Weekly trend</small>
+        <strong>{{ formatTrend(analysis.stats.weeklyTrendKg) }}</strong>
+        <span>{{ analysis.stats.remainingKg }} kg remaining</span>
+      </article>
+      <article class="target">
+        <small>Estimated goal</small>
+        <strong>{{ analysis.stats.estimatedGoalDate || '—' }}</strong>
+        <span>{{ analysis.stats.onTrack === true ? 'On track' : analysis.stats.onTrack === false ? 'Behind target date' : 'No target date' }}</span>
+      </article>
+    </div>
+
+    <div class="progress-bar" *ngIf="analysis.stats.percentToGoal != null">
+      <div class="progress-meta"><strong>{{ analysis.stats.percentToGoal }}%</strong><span>of the way to {{ analysis.stats.targetWeightKg }} kg</span></div>
+      <div class="bar"><i [style.width.%]="analysis.stats.percentToGoal"></i></div>
+    </div>
+
+    <div class="chart-panel" *ngIf="chart as c">
+      <div class="chart-head">
+        <strong>Weight evolution</strong>
+        <span>Dashed line = target weight</span>
+      </div>
+      <svg viewBox="0 0 640 220" role="img" aria-label="Weight progress chart">
+        <line [attr.x1]="28" [attr.x2]="612" [attr.y1]="c.targetY" [attr.y2]="c.targetY" class="target-line"></line>
+        <polyline [attr.points]="c.points" class="weight-line"></polyline>
+        <circle *ngFor="let point of c.weights" [attr.cx]="point.x" [attr.cy]="point.y" r="4.5" class="weight-dot">
+          <title>{{ point.value }} kg</title>
+        </circle>
+        <text *ngFor="let label of c.labels" [attr.x]="label.x" y="208" class="axis-label">{{ label.text }}</text>
+      </svg>
+    </div>
+
+    <div class="lists" *ngIf="analysis.warnings?.length">
+      <div class="strategy warn">
+        <strong>Warnings</strong>
+        <ul><li *ngFor="let warning of analysis.warnings">{{ warning }}</li></ul>
+      </div>
+    </div>
+
+    <div class="coach">
+      <div class="coach-head">
+        <div>
+          <p class="eyebrow">Coach AI</p>
+          <h3>Personalized advice</h3>
+        </div>
+        <span class="mini-pill" *ngIf="analysis.source === 'ai'">{{ analysis.model }}</span>
+        <span class="mini-pill warn" *ngIf="analysis.source === 'fallback'">Offline fallback</span>
+      </div>
+      <p class="coach-comment">{{ analysis.coachComment }}</p>
+      <div class="tip-cards">
+        <article *ngFor="let tip of analysis.tips; let i = index">
+          <span>{{ i + 1 }}</span>
+          <p>{{ tip }}</p>
+        </article>
+      </div>
+    </div>
+
+    <details class="tech-panel">
+      <summary>
+        <span>What was sent to the AI</span>
+        <small>Profile + calculated numbers (not invented by the model)</small>
+      </summary>
+
+      <div class="tech-grid">
+        <section class="tech-card">
+          <h4>User profile</h4>
+          <dl>
+            <div><dt>Name</dt><dd>{{ goalForm.value.firstName }}</dd></div>
+            <div><dt>Height</dt><dd>{{ goalForm.value.heightCm }} cm</dd></div>
+            <div><dt>Goal</dt><dd>{{ goalForm.value.mainGoal }}</dd></div>
+            <div><dt>Target weight</dt><dd>{{ analysis.stats.targetWeightKg }} kg</dd></div>
+            <div><dt>Target date</dt><dd>{{ goalForm.value.targetDate || '—' }}</dd></div>
+          </dl>
+        </section>
+
+        <section class="tech-card">
+          <h4>Calculated status</h4>
+          <dl>
+            <div><dt>Status</dt><dd><em [ngClass]="statusClass">{{ analysis.status }}</em></dd></div>
+            <div><dt>Start → current</dt><dd>{{ analysis.stats.startWeightKg }} → {{ analysis.stats.currentWeightKg }} kg</dd></div>
+            <div><dt>Change</dt><dd>{{ formatSigned(analysis.stats.changeKg) }}</dd></div>
+            <div><dt>Weekly trend</dt><dd>{{ formatTrend(analysis.stats.weeklyTrendKg) }}</dd></div>
+            <div><dt>Progress</dt><dd>{{ analysis.stats.percentToGoal }}%</dd></div>
+            <div><dt>Estimated goal</dt><dd>{{ analysis.stats.estimatedGoalDate || '—' }}</dd></div>
+            <div><dt>On track</dt><dd>{{ analysis.stats.onTrack === true ? 'Yes' : analysis.stats.onTrack === false ? 'No' : '—' }}</dd></div>
+            <div><dt>BMI</dt><dd>{{ analysis.stats.currentBmi }}</dd></div>
+            <div><dt>Waist change</dt><dd>{{ analysis.stats.waistChangeCm != null ? analysis.stats.waistChangeCm + ' cm' : '—' }}</dd></div>
+            <div><dt>Days tracked</dt><dd>{{ analysis.stats.daysTracked }}</dd></div>
+          </dl>
+        </section>
+      </div>
+
+      <details class="raw-prompt">
+        <summary>Show raw prompt text</summary>
+        <pre>{{ analysis.prompt }}</pre>
+      </details>
+    </details>
+  </section>
+</main>

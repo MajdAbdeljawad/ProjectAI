@@ -16,6 +16,10 @@ export class FitnessApiService {
     return this.http.post<any>(`${this.apiUrl}/public/plans/generate`, request);
   }
 
+  analyzeProgress(request: Record<string, unknown>): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/public/progress/analyze`, request);
+  }
+
   connectStrava(): Observable<{ url: string }> {
     return this.http.get<{ url: string }>(`${this.apiUrl}/strava/connect`);
   }
