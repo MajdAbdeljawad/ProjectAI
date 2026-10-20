@@ -1,0 +1,40 @@
+<div class="app-shell">
+  <aside class="sidebar" aria-label="Navigation principale">
+    <a class="brand" routerLink="/" aria-label="Move, accueil">
+      <svg class="brand-mark" viewBox="0 0 42 34" aria-hidden="true">
+        <path d="M3 28 14 15l6 8L31 5l8 23" />
+      </svg>
+      <span>Move</span>
+    </a>
+
+    <nav class="primary-nav">
+      <a routerLink="/" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z" /></svg>
+        <span>Vue d’ensemble</span>
+      </a>
+      <a routerLink="/objectifs" routerLinkActive="is-active">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="13" r="8" /><circle cx="11" cy="13" r="4" /><path d="m14 10 7-7m-4 0h4v4" /></svg>
+        <span>Objectifs</span>
+      </a>
+      <a routerLink="/progression" routerLinkActive="is-active">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20v-5m6 5V9m6 11V4m6 16v-8" /></svg>
+        <span>Progression</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-user">
+      <span class="user-avatar" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0" /></svg>
+      </span>
+      <label class="user-control">
+        <span>Utilisateur</span>
+        <input aria-label="Identifiant utilisateur" type="number" min="1" step="1"
+          [ngModel]="userContext.userId()" (ngModelChange)="userContext.setUserId($event)" />
+      </label>
+    </div>
+  </aside>
+
+  <main class="workspace">
+    <router-outlet />
+  </main>
+</div>

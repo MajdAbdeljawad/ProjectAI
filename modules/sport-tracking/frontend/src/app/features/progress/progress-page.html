@@ -1,0 +1,111 @@
+<header class="page-heading">
+  <div><h1>Progression</h1></div>
+  <button class="button button-primary" type="button" (click)="beginCreate()" [disabled]="saving()">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+    Ajouter une mesure
+  </button>
+</header>
+
+<section class="editor" aria-labelledby="ai-title">
+  <h2 id="ai-title">Résumé de progression avec Ollama</h2>
+  <p>Analyse locale des 30 dernières mesures, uniquement à votre demande. Les données restent sur cet ordinateur.</p>
+  <button class="button button-primary" type="button" (click)="summarize()"
+    [disabled]="aiBusy() || loading() || !!loadError() || entries().length === 0">
+    {{ aiBusy() ? 'Analyse en cours…' : 'Résumer ma progression' }}
+  </button>
+  @if (!loading() && !loadError() && entries().length === 0) {
+    <p>Ajoutez une mesure pour obtenir un résumé.</p>
+  }
+  @if (aiError()) { <p class="notice notice-error" role="alert">{{ aiError() }}</p> }
+  @if (aiSummary()) { <p style="white-space: pre-line" role="status">{{ aiSummary() }}</p> }
+  <p>Texte généré par IA : vérifiez les informations. Ce résumé ne constitue pas un avis médical.</p>
+</section>
+
+@if (success()) { <p class="notice notice-success" role="status">{{ success() }}</p> }
+@if (loadError()) {
+  <div class="notice notice-error" role="alert"><span>{{ loadError() }}</span><button class="text-button" type="button" (click)="refresh()">Réessayer</button></div>
+}
+@if (error()) { <p class="notice notice-error" role="alert">{{ error() }}</p> }
+
+@if (formVisible()) {
+  <section class="editor" aria-labelledby="form-title">
+    <div class="editor-heading">
+      <h2 id="form-title">{{ editingId() === null ? 'Nouvelle mesure' : 'Modifier la mesure' }}</h2>
+      <button class="icon-button" type="button" aria-label="Fermer le formulaire" (click)="cancelForm()" [disabled]="saving()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+      </button>
+    </div>
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="form-grid">
+        <label>Date de mesure
+          <input type="date" formControlName="measurementDate" />
+          @if (form.controls.measurementDate.touched && form.controls.measurementDate.invalid) { <span class="field-error">La date est requise.</span> }
+        </label>
+        <label>Poids (kg)
+          <input type="number" formControlName="weight" min="0.01" max="1000" step="0.01" placeholder="Facultatif" />
+          @if (form.controls.weight.touched && form.controls.weight.invalid) { <span class="field-error">Saisissez une valeur de 0,01 à 1 000 avec au maximum 2 décimales.</span> }
+        </label>
+        <label>Tour de taille (cm)
+          <input type="number" formControlName="waistCircumference" min="0.01" max="1000" step="0.01" placeholder="Facultatif" />
+          @if (form.controls.waistCircumference.touched && form.controls.waistCircumference.invalid) { <span class="field-error">Saisissez une valeur de 0,01 à 1 000 avec au maximum 2 décimales.</span> }
+        </label>
+        <label>Sommeil (heures)
+          <input type="number" formControlName="sleepHours" min="0" max="24" step="0.01" placeholder="Facultatif" />
+          @if (form.controls.sleepHours.touched && form.controls.sleepHours.invalid) { <span class="field-error">Saisissez une valeur de 0 à 24 avec au maximum 2 décimales.</span> }
+        </label>
+        <label>Énergie (1 à 5)
+          <select formControlName="energyLevel">
+            <option [ngValue]="null">Facultatif</option>
+            <option [ngValue]="1">1 — Très faible</option>
+            <option [ngValue]="2">2</option>
+            <option [ngValue]="3">3</option>
+            <option [ngValue]="4">4</option>
+            <option [ngValue]="5">5 — Très élevée</option>
+          </select>
+          @if (form.controls.energyLevel.touched && form.controls.energyLevel.invalid) { <span class="field-error">Choisissez un niveau de 1 à 5.</span> }
+        </label>
+      </div>
+      <div class="form-actions">
+        <button class="button button-secondary" type="button" (click)="cancelForm()" [disabled]="saving()">Annuler</button>
+        <button class="button button-primary" type="submit" [disabled]="saving()">
+          {{ saving() ? 'Enregistrement…' : editingId() === null ? 'Ajouter la mesure' : 'Enregistrer les modifications' }}
+        </button>
+      </div>
+    </form>
+  </section>
+}
+
+<section class="data-section" aria-labelledby="entries-heading">
+  <div class="section-heading"><h2 id="entries-heading">Vos mesures</h2></div>
+  @if (loading()) {
+    <p class="loading-state" aria-live="polite">Chargement des mesures…</p>
+  } @else if (!loadError() && entries().length === 0) {
+    <div class="empty-state">
+      <svg class="empty-icon document-icon" viewBox="0 0 48 48" aria-hidden="true"><path d="M13 5h15l9 9v29H13zM28 5v10h9M19 25h12M19 32h12" /></svg>
+      <h3>Ajoutez votre première mesure pour suivre votre évolution</h3>
+      <p>Enregistrez vos mesures pour visualiser vos progrès dans le temps.</p>
+      <button class="button button-primary" type="button" (click)="beginCreate()">Ajouter une mesure</button>
+    </div>
+  } @else if (!loadError()) {
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Date</th><th>Poids</th><th>Tour de taille</th><th>Sommeil</th><th>Énergie</th><th>Actions</th></tr></thead>
+        <tbody>
+          @for (entry of entries(); track entry.id) {
+            <tr>
+              <td class="primary-cell">{{ entry.measurementDate | date:'d MMM y':'':'fr' }}</td>
+              <td>{{ entry.weight == null ? '—' : (entry.weight | number:'1.0-2') + ' kg' }}</td>
+              <td>{{ entry.waistCircumference == null ? '—' : (entry.waistCircumference | number:'1.0-2') + ' cm' }}</td>
+              <td>{{ entry.sleepHours == null ? '—' : (entry.sleepHours | number:'1.0-2') + ' h' }}</td>
+              <td>{{ entry.energyLevel == null ? '—' : entry.energyLevel + '/5' }}</td>
+              <td><div class="row-actions">
+                <button class="action-button" type="button" (click)="beginEdit(entry)" [disabled]="saving()">Modifier</button>
+                <button class="action-button action-delete" type="button" (click)="delete(entry)" [disabled]="saving()">Supprimer</button>
+              </div></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
