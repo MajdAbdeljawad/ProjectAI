@@ -20,6 +20,10 @@ export class ProgressPage {
   private readonly reloadVersion = signal(0);
 
   readonly entries = signal<ProgressEntry[]>([]);
+  readonly aiBusy = signal(false);
+  readonly aiSummary = signal('');
+  readonly aiError = signal('');
+  private aiVersion = 0;
   readonly loading = signal(true);
   readonly error = signal('');
   readonly loadError = signal('');
@@ -54,6 +58,10 @@ export class ProgressPage {
     effect((onCleanup) => {
       const userId = this.userContext.userId();
       this.reloadVersion();
+      this.aiVersion++;
+      this.aiSummary.set('');
+      this.aiError.set('');
+      this.aiBusy.set(false);
       this.loading.set(true);
       this.loadError.set('');
       this.entries.set([]);
@@ -75,6 +83,26 @@ export class ProgressPage {
     this.formVisible.set(true);
     this.error.set('');
     this.success.set('');
+  }
+
+  summarize(): void {
+    if (this.aiBusy()) return;
+    const version = ++this.aiVersion;
+    this.aiBusy.set(true);
+    this.aiSummary.set('');
+    this.aiError.set('');
+    this.api.summarize(this.userContext.userId()).subscribe({
+      next: (result) => {
+        if (version !== this.aiVersion) return;
+        this.aiSummary.set(result.summary);
+        this.aiBusy.set(false);
+      },
+      error: (error: unknown) => {
+        if (version !== this.aiVersion) return;
+        this.aiError.set(problemMessage(error));
+        this.aiBusy.set(false);
+      },
+    });
   }
 
   beginEdit(entry: ProgressEntry): void {

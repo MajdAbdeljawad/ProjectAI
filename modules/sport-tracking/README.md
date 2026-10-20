@@ -80,9 +80,12 @@ Avant fusion fonctionnelle, il faudra adapter les DTO et les appels à l'utilisa
 authentifié du groupe, convenir du modèle de données et réutiliser le fournisseur IA
 existant. Ne pas copier les tables directement dans les migrations du groupe.
 
-La première option proposée est un résumé de progression via Ollama local, à la
-demande de l'utilisateur. Aucune nouvelle intégration IA n'est activée dans ce module.
-Le choix du fournisseur doit être confirmé avant envoi de mesures à un service externe.
+Un résumé de progression via Ollama local est maintenant disponible, à la demande
+de l'utilisateur : `POST /api/users/{userId}/progress-summary`, depuis le bouton
+de la page progression. Il utilise `llama3.2:3b` sur le port 11434. Voir
+[OLLAMA.md](OLLAMA.md) pour le démarrage, les limites et les vérifications réalisées.
+Cette intégration autonome devra être raccordée au fournisseur existant de FitCoach
+lors de la fusion fonctionnelle.
 
 ## Vérification
 

@@ -9,6 +9,11 @@ export class ProgressEntryApiService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiBaseUrl}/api/users`;
 
+  summarize(userId: number): Observable<{summary: string; model: string; measurementCount: number}> {
+    return this.http.post<{summary: string; model: string; measurementCount: number}>(
+      `${this.baseUrl}/${userId}/progress-summary`, {});
+  }
+
   list(userId: number): Observable<ProgressEntry[]> {
     return this.http.get<ProgressEntry[]>(`${this.baseUrl}/${userId}/progress-entries`);
   }

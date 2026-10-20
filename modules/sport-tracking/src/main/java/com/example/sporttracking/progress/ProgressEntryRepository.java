@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProgressEntryRepository extends JpaRepository<ProgressEntry, Long> {
+    List<ProgressEntry> findTop30ByUserIdOrderByMeasurementDateDescIdDesc(Long userId);
     List<ProgressEntry> findByUserIdOrderByMeasurementDateDesc(Long userId);
     Optional<ProgressEntry> findByIdAndUserId(Long id, Long userId);
 }

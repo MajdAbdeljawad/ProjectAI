@@ -6,6 +6,21 @@
   </button>
 </header>
 
+<section class="editor" aria-labelledby="ai-title">
+  <h2 id="ai-title">Résumé de progression avec Ollama</h2>
+  <p>Analyse locale des 30 dernières mesures, uniquement à votre demande. Les données restent sur cet ordinateur.</p>
+  <button class="button button-primary" type="button" (click)="summarize()"
+    [disabled]="aiBusy() || loading() || !!loadError() || entries().length === 0">
+    {{ aiBusy() ? 'Analyse en cours…' : 'Résumer ma progression' }}
+  </button>
+  @if (!loading() && !loadError() && entries().length === 0) {
+    <p>Ajoutez une mesure pour obtenir un résumé.</p>
+  }
+  @if (aiError()) { <p class="notice notice-error" role="alert">{{ aiError() }}</p> }
+  @if (aiSummary()) { <p style="white-space: pre-line" role="status">{{ aiSummary() }}</p> }
+  <p>Texte généré par IA : vérifiez les informations. Ce résumé ne constitue pas un avis médical.</p>
+</section>
+
 @if (success()) { <p class="notice notice-success" role="status">{{ success() }}</p> }
 @if (loadError()) {
   <div class="notice notice-error" role="alert"><span>{{ loadError() }}</span><button class="text-button" type="button" (click)="refresh()">Réessayer</button></div>
