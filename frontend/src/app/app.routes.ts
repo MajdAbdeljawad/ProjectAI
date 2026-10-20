@@ -9,7 +9,7 @@ export const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent },
   { path: 'recovery', component: RecoveryComponent },
   { path: 'diet', component: SectionPlaceholderComponent, data: { title: 'Diet' } },
-  { path: 'progress', component: SectionPlaceholderComponent, data: { title: 'Progress' } },
+  { path: 'progress', component: ProgressComponent },
   { path: 'strava', component: SectionPlaceholderComponent, data: { title: 'Strava' } },
   { path: 'profile', component: SectionPlaceholderComponent, data: { title: 'Profile' } },
   { path: '**', redirectTo: '' }
