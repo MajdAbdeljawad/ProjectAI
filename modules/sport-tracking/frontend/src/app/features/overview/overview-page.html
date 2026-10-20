@@ -1,0 +1,83 @@
+<header class="page-heading">
+  <h1>Votre progression</h1>
+  <a class="button button-primary" routerLink="/objectifs" [queryParams]="{ nouveau: 1 }">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+    Nouvel objectif
+  </a>
+</header>
+
+<section class="data-section" aria-labelledby="goals-heading">
+  <div class="section-heading">
+    <h2 id="goals-heading">Objectifs</h2>
+    <a class="text-link" routerLink="/objectifs">Voir tous les objectifs</a>
+  </div>
+
+  @if (goalsError()) {
+    <div class="notice notice-error" role="alert">
+      <span>{{ goalsError() }}</span>
+      <button class="text-button" type="button" (click)="refresh()">Réessayer</button>
+    </div>
+  } @else if (goalsLoading()) {
+    <p class="loading-state" aria-live="polite">Chargement des objectifs…</p>
+  } @else if (goals().length === 0) {
+    <div class="empty-state">
+      <svg class="empty-icon" viewBox="0 0 48 48" aria-hidden="true"><circle cx="22" cy="26" r="16" /><circle cx="22" cy="26" r="8" /><path d="m27 21 16-16m-9 0h9v9" /></svg>
+      <h3>Aucun objectif pour le moment</h3>
+      <p>Définissez un cap pour suivre vos progrès au fil du temps.</p>
+      <a class="button button-primary" routerLink="/objectifs" [queryParams]="{ nouveau: 1 }">Créer un objectif</a>
+    </div>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Objectif</th><th>Type</th><th>Échéance</th><th>Statut</th></tr></thead>
+        <tbody>
+          @for (goal of goals().slice(0, 5); track goal.id) {
+            <tr>
+              <td class="primary-cell">{{ goal.targetValue | number:'1.0-2' }} {{ goal.unit }}</td>
+              <td>{{ typeLabel(goal.type) }}</td>
+              <td>{{ goal.targetDate | date:'d MMM y':'':'fr' }}</td>
+              <td><span class="status" [class.status-active]="goal.status === 'ACTIVE'">{{ statusLabel(goal.status) }}</span></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+
+<section class="data-section" aria-labelledby="entries-heading">
+  <div class="section-heading">
+    <h2 id="entries-heading">Dernières mesures</h2>
+    <a class="text-link" routerLink="/progression">Voir toute la progression</a>
+  </div>
+
+  @if (entriesError()) {
+    <div class="notice notice-error" role="alert">
+      <span>{{ entriesError() }}</span>
+      <button class="text-button" type="button" (click)="refresh()">Réessayer</button>
+    </div>
+  } @else if (entriesLoading()) {
+    <p class="loading-state" aria-live="polite">Chargement des mesures…</p>
+  } @else if (entries().length === 0) {
+    <div class="empty-state empty-state-compact">
+      <svg class="empty-icon document-icon" viewBox="0 0 48 48" aria-hidden="true"><path d="M13 5h15l9 9v29H13zM28 5v10h9M19 25h12M19 32h12" /></svg>
+      <h3>Ajoutez votre première mesure pour suivre votre évolution</h3>
+      <p>Enregistrez vos mesures pour visualiser vos progrès dans le temps.</p>
+      <a class="button button-primary" routerLink="/progression" [queryParams]="{ nouveau: 1 }">Ajouter une mesure</a>
+    </div>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Date</th><th>Mesures</th></tr></thead>
+        <tbody>
+          @for (entry of entries(); track entry.id) {
+            <tr>
+              <td class="primary-cell">{{ entry.measurementDate | date:'d MMM y':'':'fr' }}</td>
+              <td>{{ measurementSummary(entry) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

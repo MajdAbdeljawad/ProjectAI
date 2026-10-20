@@ -1,0 +1,13 @@
+target/
+node_modules/
+dist/
+.angular/
+.idea/
+.vscode/
+*.iml
+.env
+.env.*
+!.env.example
+*.log
+*.sql.gz
+*.bak
