@@ -6,48 +6,130 @@
   </section>
 
   <form class="intake-form" [formGroup]="form" (ngSubmit)="generate()">
-    <div class="form-section">
-      <h2>About you</h2>
+    <section class="form-section">
+      <div class="section-heading">
+        <h2>About you</h2>
+        <span>Basic profile used for safe loading</span>
+      </div>
       <div class="field-grid">
-        <label>Name<input formControlName="firstName" placeholder="First name" /></label>
-        <label>Age<input type="number" formControlName="age" /></label>
-        <label>Gender<select formControlName="gender"><option>female</option><option>male</option><option>non-binary</option><option>prefer not to say</option></select></label>
-        <label>Height (cm)<input type="number" formControlName="heightCm" /></label>
-        <label>Weight (kg)<input type="number" formControlName="weightKg" /></label>
-        <label>Target weight (kg)<input type="number" formControlName="targetWeightKg" /></label>
+        <label class="field" [class.invalid]="isInvalid('firstName')">
+          <span>Name</span>
+          <input formControlName="firstName" placeholder="First name" />
+        </label>
+        <label class="field">
+          <span>Age</span>
+          <input type="number" formControlName="age" min="16" max="100" />
+        </label>
+        <label class="field">
+          <span>Gender</span>
+          <select formControlName="gender">
+            <option value="female">Female</option>
+            <option value="male">Male</option>
+            <option value="non-binary">Non-binary</option>
+            <option value="prefer not to say">Prefer not to say</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Height (cm)</span>
+          <input type="number" formControlName="heightCm" min="100" max="250" />
+        </label>
+        <label class="field">
+          <span>Weight (kg)</span>
+          <input type="number" formControlName="weightKg" min="30" max="300" />
+        </label>
+        <label class="field">
+          <span>Target weight (kg)</span>
+          <input type="number" formControlName="targetWeightKg" min="30" max="300" />
+        </label>
       </div>
-    </div>
+    </section>
 
-    <div class="form-section">
-      <h2>Your training reality</h2>
+    <section class="form-section">
+      <div class="section-heading">
+        <h2>Your training reality</h2>
+        <span>Time, place, and equipment the plan must respect</span>
+      </div>
       <div class="field-grid">
-        <label>Fitness level<select formControlName="fitnessLevel"><option>beginner</option><option>intermediate</option><option>advanced</option></select></label>
-        <label>Experience<select formControlName="trainingExperience"><option>new to structured training</option><option>some experience</option><option>consistent for 1+ years</option></select></label>
-        <label>Days per week<input type="number" formControlName="trainingDaysPerWeek" /></label>
-        <label>Minutes per session<input type="number" formControlName="sessionDurationMinutes" /></label>
-        <label>Location<select formControlName="trainingLocation"><option>home</option><option>gym</option><option>outdoors</option></select></label>
-        <label>Equipment<input formControlName="equipment" placeholder="Dumbbells, bands, none..." /></label>
+        <label class="field">
+          <span>Fitness level</span>
+          <select formControlName="fitnessLevel">
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Experience</span>
+          <select formControlName="trainingExperience">
+            <option value="new to structured training">New to structured training</option>
+            <option value="some experience">Some experience</option>
+            <option value="consistent for 1+ years">Consistent for 1+ years</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Days per week</span>
+          <input type="number" formControlName="trainingDaysPerWeek" min="0" max="7" />
+        </label>
+        <label class="field">
+          <span>Minutes per session</span>
+          <input type="number" formControlName="sessionDurationMinutes" min="15" max="240" />
+        </label>
+        <label class="field">
+          <span>Location</span>
+          <select formControlName="trainingLocation">
+            <option value="home">Home</option>
+            <option value="gym">Gym</option>
+            <option value="outdoors">Outdoors</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Equipment</span>
+          <input formControlName="equipment" placeholder="Dumbbells, bands, none..." />
+        </label>
       </div>
-    </div>
+    </section>
 
-    <div class="form-section">
-      <h2>What should the plan optimize?</h2>
-      <div class="field-grid single-row">
-        <label>Main goal<select formControlName="mainGoal"><option>muscle gain</option><option>fat loss</option><option>strength improvement</option><option>endurance improvement</option><option>weight maintenance</option></select></label>
-        <label>Injuries or limitations<textarea formControlName="injuriesOrLimitations" placeholder="Tell the coach what to avoid, or write None"></textarea></label>
+    <section class="form-section">
+      <div class="section-heading">
+        <h2>What should the plan optimize?</h2>
+        <span>Goal and anything the coach must avoid</span>
       </div>
-    </div>
+      <div class="field-grid goal-grid">
+        <label class="field">
+          <span>Main goal</span>
+          <select formControlName="mainGoal">
+            <option value="muscle gain">Muscle gain</option>
+            <option value="fat loss">Fat loss</option>
+            <option value="strength improvement">Strength improvement</option>
+            <option value="endurance improvement">Endurance improvement</option>
+            <option value="weight maintenance">Weight maintenance</option>
+          </select>
+        </label>
+        <label class="field field-wide">
+          <span>Injuries or limitations</span>
+          <textarea formControlName="injuriesOrLimitations" rows="4" placeholder="Tell the coach what to avoid, or write None"></textarea>
+        </label>
+      </div>
+    </section>
 
+    <p class="error" *ngIf="form.invalid && form.touched" role="alert">Please complete the highlighted fields before generating a plan.</p>
     <p class="error" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
-    <button class="generate-button" type="submit" [disabled]="isGenerating">
-      {{ isGenerating ? 'Building your plan...' : 'Generate my personalized plan' }}
-    </button>
+
+    <div class="form-actions">
+      <button class="secondary-btn" type="button" (click)="resetForm()" [disabled]="isGenerating">Clear form</button>
+      <button class="primary-btn" type="submit" [disabled]="isGenerating">
+        {{ isGenerating ? 'Building your plan...' : 'Generate my personalized plan' }}
+      </button>
+    </div>
   </form>
 
   <section class="result" *ngIf="plan">
     <div class="result-heading">
-      <div><p class="eyebrow">Your recommendation</p><h2>{{ plan.title }}</h2></div>
-      <span>30 days</span>
+      <div>
+        <p class="eyebrow">Your recommendation</p>
+        <h2>{{ plan.title }}</h2>
+      </div>
+      <span class="duration-chip">30 days</span>
     </div>
     <p class="summary">{{ plan.summary }}</p>
     <div class="strategy"><strong>How to progress</strong><span>{{ plan.weeklyStrategy }}</span></div>

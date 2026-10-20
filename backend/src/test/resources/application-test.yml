@@ -22,6 +22,8 @@ ai:
   api-key: demo-key
   endpoint: https://example.com
   model: gpt-4o-mini
+  connect-timeout-ms: 1000
+  read-timeout-ms: 1000
 
 strava:
   client-id: test-client-id
